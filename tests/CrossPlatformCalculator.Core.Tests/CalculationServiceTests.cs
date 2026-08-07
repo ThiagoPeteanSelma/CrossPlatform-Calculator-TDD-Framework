@@ -31,6 +31,17 @@ public class CalculationServiceTests
         Assert.Equal(expected, result);
     }
 
+    [Theory]
+    [InlineData("SQRT", 16, 4)]
+    [InlineData("SQUARE", 5, 25)]
+    [InlineData("RECIPROCAL", 4, 0.25)]
+    public void Calculate_supports_case_insensitive_word_aliases(string symbol, decimal value, decimal expected)
+    {
+        var result = _service.Calculate(value, symbol);
+
+        Assert.Equal(expected, result);
+    }
+
     [Fact]
     public void Calculate_throws_when_dividing_by_zero()
     {

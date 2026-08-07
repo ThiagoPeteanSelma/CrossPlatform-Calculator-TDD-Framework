@@ -81,11 +81,11 @@ The current structure follows an API-first layered approach that maps well to MV
 ## Run
 
 ```bash
-dotnet run --project /home/runner/work/CrossPlatform-Calculator-TDD-Framework/CrossPlatform-Calculator-TDD-Framework/src/CrossPlatformCalculator.Api/CrossPlatformCalculator.Api.csproj
+dotnet run --project src/CrossPlatformCalculator.Api/CrossPlatformCalculator.Api.csproj
 ```
 
 ## Test
 
 ```bash
-dotnet test /home/runner/work/CrossPlatform-Calculator-TDD-Framework/CrossPlatform-Calculator-TDD-Framework/tests/CrossPlatformCalculator.Core.Tests/CrossPlatformCalculator.Core.Tests.csproj
+dotnet test tests/CrossPlatformCalculator.Core.Tests/CrossPlatformCalculator.Core.Tests.csproj
 ```

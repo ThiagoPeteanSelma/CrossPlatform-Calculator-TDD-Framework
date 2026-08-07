@@ -26,23 +26,16 @@ app.MapPost("/api/calculations", (CalculationRequest request, CalculationService
     Execute(() =>
     {
         var result = service.Calculate(request.FirstValue, request.Operation, request.SecondValue);
-        var expression = request.SecondValue is null
-            ? $"{request.Operation}({request.FirstValue})"
-            : $"{request.FirstValue} {request.Operation} {request.SecondValue}";
+        var expressionBuilder = BuildExpression(request.FirstValue, [new ExpressionStepRequest(request.Operation, request.SecondValue)]);
+        var expression = expressionBuilder.Build();
 
-        return Results.Ok(new CalculationResponse(expression, result));
+        return Results.Ok(new CalculationResponse(expression.DisplayText, result));
     }));
 
 app.MapPost("/api/expressions", (ExpressionRequest request, CalculationService service) =>
     Execute(() =>
     {
-        var expressionBuilder = new MathematicalExpressionBuilder(request.InitialValue);
-
-        foreach (var step in request.Steps)
-        {
-            expressionBuilder.Apply(step.Operation, step.Value);
-        }
-
+        var expressionBuilder = BuildExpression(request.InitialValue, request.Steps);
         var expression = expressionBuilder.Build();
         var result = service.Evaluate(expression);
 
@@ -74,6 +67,61 @@ static IResult Execute(Func<IResult> action)
         return Results.BadRequest(new { error = exception.Message });
     }
 }
+
+static MathematicalExpressionBuilder BuildExpression(decimal initialValue, IReadOnlyList<ExpressionStepRequest> steps)
+{
+    var builder = new MathematicalExpressionBuilder(initialValue);
+
+    foreach (var step in steps)
+    {
+        ApplyStep(builder, step);
+    }
+
+    return builder;
+}
+
+static void ApplyStep(MathematicalExpressionBuilder builder, ExpressionStepRequest step)
+{
+    var operation = step.Operation.Trim();
+
+    switch (operation.ToLowerInvariant())
+    {
+        case "+":
+            builder.Add(RequireValue(step));
+            break;
+        case "-":
+            builder.Subtract(RequireValue(step));
+            break;
+        case "×":
+        case "*":
+            builder.Multiply(RequireValue(step));
+            break;
+        case "÷":
+        case "/":
+            builder.Divide(RequireValue(step));
+            break;
+        case "%":
+            builder.Modulo(RequireValue(step));
+            break;
+        case "√":
+        case "sqrt":
+            builder.SquareRoot();
+            break;
+        case "x²":
+        case "square":
+            builder.Square();
+            break;
+        case "1/x":
+        case "reciprocal":
+            builder.Reciprocal();
+            break;
+        default:
+            throw new NotSupportedException($"Operation '{step.Operation}' is not supported.");
+    }
+}
+
+static decimal RequireValue(ExpressionStepRequest step) =>
+    step.Value ?? throw new InvalidOperationException($"Operation '{step.Operation}' requires a second operand.");
 
 public sealed record CalculationRequest(decimal FirstValue, string Operation, decimal? SecondValue = null);
 public sealed record ExpressionStepRequest(string Operation, decimal? Value = null);

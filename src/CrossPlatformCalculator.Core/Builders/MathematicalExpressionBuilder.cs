@@ -13,27 +13,27 @@ public sealed class MathematicalExpressionBuilder
 
     public decimal InitialValue { get; }
 
-    public MathematicalExpressionBuilder Add(decimal value) => Apply("+", value);
+    public MathematicalExpressionBuilder Add(decimal value) => AddStep("+", value);
 
-    public MathematicalExpressionBuilder Subtract(decimal value) => Apply("-", value);
+    public MathematicalExpressionBuilder Subtract(decimal value) => AddStep("-", value);
 
-    public MathematicalExpressionBuilder Multiply(decimal value) => Apply("×", value);
+    public MathematicalExpressionBuilder Multiply(decimal value) => AddStep("×", value);
 
-    public MathematicalExpressionBuilder Divide(decimal value) => Apply("÷", value);
+    public MathematicalExpressionBuilder Divide(decimal value) => AddStep("÷", value);
 
-    public MathematicalExpressionBuilder Modulo(decimal value) => Apply("%", value);
+    public MathematicalExpressionBuilder Modulo(decimal value) => AddStep("%", value);
 
-    public MathematicalExpressionBuilder SquareRoot() => Apply("√");
+    public MathematicalExpressionBuilder SquareRoot() => AddStep("√");
 
-    public MathematicalExpressionBuilder Square() => Apply("x²");
+    public MathematicalExpressionBuilder Square() => AddStep("x²");
 
-    public MathematicalExpressionBuilder Reciprocal() => Apply("1/x");
+    public MathematicalExpressionBuilder Reciprocal() => AddStep("1/x");
 
-    public MathematicalExpressionBuilder Apply(string symbol, decimal? value = null)
+    public MathematicalExpression Build() => new(InitialValue, _steps.AsReadOnly());
+
+    private MathematicalExpressionBuilder AddStep(string symbol, decimal? value = null)
     {
         _steps.Add(new CalculationStep(symbol, value));
         return this;
     }
-
-    public MathematicalExpression Build() => new(InitialValue, _steps.AsReadOnly());
 }

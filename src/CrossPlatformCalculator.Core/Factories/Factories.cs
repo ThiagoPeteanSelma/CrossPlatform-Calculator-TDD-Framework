@@ -13,12 +13,11 @@ public abstract class OperationFactory
 public sealed class DefaultOperationFactory : OperationFactory
 {
     private static readonly IReadOnlyDictionary<string, Func<ICalculationOperation>> OperationMap =
-        new Dictionary<string, Func<ICalculationOperation>>(StringComparer.OrdinalIgnoreCase)
+        new Dictionary<string, Func<ICalculationOperation>>(StringComparer.Ordinal)
         {
             ["+"] = () => new AdditionOperation(),
             ["-"] = () => new SubtractionOperation(),
             ["×"] = () => new MultiplicationOperation(),
-            ["x"] = () => new MultiplicationOperation(),
             ["*"] = () => new MultiplicationOperation(),
             ["÷"] = () => new DivisionOperation(),
             ["/"] = () => new DivisionOperation(),
@@ -45,7 +44,9 @@ public sealed class DefaultOperationFactory : OperationFactory
 
     public override ICalculationOperation CreateOperation(string symbol)
     {
-        if (OperationMap.TryGetValue(symbol, out var factory))
+        var normalizedSymbol = NormalizeSymbol(symbol);
+
+        if (OperationMap.TryGetValue(normalizedSymbol, out var factory))
         {
             return factory();
         }
@@ -54,6 +55,12 @@ public sealed class DefaultOperationFactory : OperationFactory
     }
 
     public override IReadOnlyCollection<OperationDefinition> GetAvailableOperations() => AvailableOperations;
+
+    private static string NormalizeSymbol(string symbol)
+    {
+        var normalized = symbol.Trim();
+        return normalized.All(char.IsLetter) ? normalized.ToLowerInvariant() : normalized;
+    }
 }
 
 public interface IPlatformUiFactory
