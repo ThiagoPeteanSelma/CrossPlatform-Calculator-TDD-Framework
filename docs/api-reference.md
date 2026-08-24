@@ -1,69 +1,60 @@
 # API Reference
 
 ## Overview
-The API provides calculation services for the calculator monorepo and acts as the central business logic layer for web, mobile, and desktop clients.
+
+The API is the central calculator service for the monorepo and currently exposes a single calculation endpoint.
 
 ## Base URL
-- Development: http://localhost:5000
-- Production: https://api.example.com
+
+- Development: `https://localhost:5001`
+- HTTP redirection is enabled in development and production should use HTTPS only.
 
 ## Authentication
-- JWT Bearer authentication is recommended for protected endpoints.
-- Public endpoints may be used for health checks and basic calculator operations.
+
+- The endpoint is protected by JWT Bearer authentication and the `CanCalculate` policy.
 
 ## Endpoints
 
-### GET /health
-Checks the service availability.
+### POST /api/calculations
 
-Response:
-```json
-{
-  "status": "ok"
-}
-```
-
-### POST /api/calculator/compute
-Executes a calculation based on a formula supplied by the client.
+Executes either a direct operation or an expression-based calculation.
 
 Request body:
+
 ```json
 {
-  "expression": "1 + 2 - 6 / 4 * 8 + 10%"
+  "leftOperand": 7,
+  "rightOperand": 5,
+  "operation": "Subtract"
 }
 ```
 
-The API must accept expressions with at least two numeric values and one operator, and it should support formulas with no hard limit on the number of terms. The parser must apply standard mathematical precedence and percentage rules.
+Expression request:
 
-Supported operations:
-- add
-- subtract
-- multiply
-- divide
-- modulus
-- percentage
-- squareRoot
-- square
-- reciprocal
+```json
+{
+  "expression": "1 + 2 * 3 - 4 / 2"
+}
+```
 
 Response:
+
 ```json
 {
-  "result": -10.2,
-  "expression": "1 + 2 - 6 / 4 * 8 + 10%",
-  "timestamp": "2026-08-07T00:00:00Z"
+  "success": true,
+  "result": 2,
+  "formattedResult": "2",
+  "errorMessage": null
 }
 ```
 
-### POST /api/calculator/validate
-Validates an incoming calculation request before execution.
-
 ## Error Handling
-- 400 Bad Request for malformed data.
-- 401 Unauthorized for missing or invalid credentials.
-- 403 Forbidden for insufficient permissions.
-- 500 Internal Server Error for unexpected failures.
+
+- `400 Bad Request` for invalid payloads or unsupported operations.
+- `401 Unauthorized` for missing or invalid credentials.
+- `403 Forbidden` for requests that do not satisfy the authorization policy.
 
 ## Notes
-- All client input must be validated server-side.
-- The API should return structured errors and logs for monitoring.
+
+- Expressions honor operator precedence and percentage suffix handling.
+- Direct operations are implemented in the API layer through an operation factory.

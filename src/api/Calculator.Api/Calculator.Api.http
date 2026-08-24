@@ -1,0 +1,20 @@
+@baseUrl = https://localhost:5001
+
+### Calculate by expression
+POST {{baseUrl}}/api/calculations
+Content-Type: application/json
+
+{
+  "expression": "1 + 2 * 3 - 4 / 2"
+}
+
+### Calculate by direct operation
+POST {{baseUrl}}/api/calculations
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "leftOperand": 7,
+  "rightOperand": 5,
+  "operation": "Subtract"
+}

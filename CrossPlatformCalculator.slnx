@@ -1,9 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/CrossPlatformCalculator.Api/CrossPlatformCalculator.Api.csproj" />
-    <Project Path="src/CrossPlatformCalculator.Core/CrossPlatformCalculator.Core.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/CrossPlatformCalculator.Core.Tests/CrossPlatformCalculator.Core.Tests.csproj" />
-  </Folder>
-</Solution>
