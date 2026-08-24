@@ -8,8 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSingleton<IOperationFactory, OperationFactory>();
-builder.Services.AddSingleton<IExpressionBuilder, ExpressionBuilder>();
-builder.Services.AddSingleton(_ => AppConfigurationManager.Instance);
+builder.Services.AddSingleton<IExpressionTreeBuilder, ExpressionTreeBuilder>();
+AppConfigurationManager.Instance.Initialize(builder.Configuration);
+builder.Services.AddSingleton(AppConfigurationManager.Instance);
 builder.Services.AddScoped<ICalculationService, CalculationService>();
 
 var app = builder.Build();

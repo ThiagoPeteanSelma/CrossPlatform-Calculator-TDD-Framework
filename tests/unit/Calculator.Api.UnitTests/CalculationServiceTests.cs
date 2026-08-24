@@ -1,4 +1,5 @@
 using Calculator.Api.Domain.Builders;
+using Calculator.Api.Domain.Factories;
 using Calculator.Api.Services;
 using Calculator.Shared.Contracts;
 using Xunit;
@@ -11,7 +12,7 @@ public sealed class CalculationServiceTests
 
     public CalculationServiceTests()
     {
-        service = new CalculationService(new ExpressionTreeBuilder());
+        service = new CalculationService(new OperationFactory(), new ExpressionTreeBuilder());
     }
 
     [Fact]

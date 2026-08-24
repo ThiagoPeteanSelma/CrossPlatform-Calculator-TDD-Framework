@@ -1,4 +1,5 @@
 using System.Globalization;
+using Calculator.Api.Domain.Factories;
 using Calculator.Api.Services.Interfaces;
 using Calculator.Api.Domain.Builders;
 using Calculator.Shared.Contracts;
@@ -10,14 +11,17 @@ namespace Calculator.Api.Services;
 /// </summary>
 public sealed class CalculationService : ICalculationService
 {
+    private readonly IOperationFactory operationFactory;
     private readonly IExpressionTreeBuilder expressionTreeBuilder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CalculationService"/> class.
     /// </summary>
+    /// <param name="operationFactory">The operation factory.</param>
     /// <param name="expressionTreeBuilder">The expression tree builder.</param>
-    public CalculationService(IExpressionTreeBuilder expressionTreeBuilder)
+    public CalculationService(IOperationFactory operationFactory, IExpressionTreeBuilder expressionTreeBuilder)
     {
+        this.operationFactory = operationFactory;
         this.expressionTreeBuilder = expressionTreeBuilder;
     }
 
@@ -49,65 +53,33 @@ public sealed class CalculationService : ICalculationService
 
         decimal result;
 
-        switch (request.Operation)
+        try
         {
-            case CalculationOperation.Add:
-                result = request.LeftOperand.Value + (request.RightOperand ?? 0m);
-                break;
-            case CalculationOperation.Subtract:
-                result = request.LeftOperand.Value - (request.RightOperand ?? 0m);
-                break;
-            case CalculationOperation.Multiply:
-                result = request.LeftOperand.Value * (request.RightOperand ?? 1m);
-                break;
-            case CalculationOperation.Divide:
-                if (request.RightOperand is null || request.RightOperand.Value == 0m)
-                {
-                    return new CalculationResponse
-                    {
-                        Success = false,
-                        ErrorMessage = "The right operand must be different from zero for division."
-                    };
-                }
-
-                result = request.LeftOperand.Value / request.RightOperand.Value;
-                break;
-            case CalculationOperation.Percentage:
-                result = request.LeftOperand.Value / 100m;
-                break;
-            case CalculationOperation.SquareRoot:
-                if (request.LeftOperand.Value < 0m)
-                {
-                    return new CalculationResponse
-                    {
-                        Success = false,
-                        ErrorMessage = "The square root is not defined for negative values."
-                    };
-                }
-
-                result = (decimal)Math.Sqrt((double)request.LeftOperand.Value);
-                break;
-            case CalculationOperation.Square:
-                result = request.LeftOperand.Value * request.LeftOperand.Value;
-                break;
-            case CalculationOperation.Reciprocal:
-                if (request.LeftOperand.Value == 0m)
-                {
-                    return new CalculationResponse
-                    {
-                        Success = false,
-                        ErrorMessage = "The reciprocal is not defined for zero."
-                    };
-                }
-
-                result = 1m / request.LeftOperand.Value;
-                break;
-            default:
-                return new CalculationResponse
-                {
-                    Success = false,
-                    ErrorMessage = $"The operation '{request.Operation}' is not supported yet."
-                };
+            result = operationFactory.Create(request.Operation).Execute(request);
+        }
+        catch (ArgumentException exception)
+        {
+            return new CalculationResponse
+            {
+                Success = false,
+                ErrorMessage = exception.Message
+            };
+        }
+        catch (DivideByZeroException exception)
+        {
+            return new CalculationResponse
+            {
+                Success = false,
+                ErrorMessage = exception.Message
+            };
+        }
+        catch (InvalidOperationException exception)
+        {
+            return new CalculationResponse
+            {
+                Success = false,
+                ErrorMessage = exception.Message
+            };
         }
 
         return new CalculationResponse
